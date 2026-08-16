@@ -1,0 +1,95 @@
+name: Release confidence gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: macos-15
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install locked toolchain
+        run: ./scripts/setup.sh
+      - name: Run static and unit checks
+        run: |
+          .venv/bin/ruff check src tests
+          .venv/bin/pytest -q tests/unit
+      - name: Run reusable browser journeys
+        run: ./scripts/test-e2e.sh
+
+  reliability-shards:
+    runs-on: macos-15
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install locked toolchain
+        run: ./scripts/setup.sh
+      - name: Execute reliability shard
+        run: ./scripts/run-reliability-shard.sh healthy "${{ matrix.shard }}" 2 "reports/shards/healthy-${{ matrix.shard }}.json"
+      - name: Upload shard evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reliability-shard-${{ matrix.shard }}
+          path: reports/shards/healthy-${{ matrix.shard }}.json
+          if-no-files-found: error
+          retention-days: 14
+
+  release-decision:
+    needs: [validate, reliability-shards]
+    runs-on: macos-15
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install locked toolchain
+        run: ./scripts/setup.sh
+      - name: Download shard evidence
+        uses: actions/download-artifact@v7
+        with:
+          pattern: reliability-shard-*
+          path: downloaded-evidence
+          merge-multiple: true
+      - name: Correlate evidence
+        run: |
+          .venv/bin/python -m vaipex_test_reliability.control_plane merge \
+            --output reports/healthy-evidence.json \
+            downloaded-evidence/healthy-0.json \
+            downloaded-evidence/healthy-1.json
+      - name: Enforce release confidence policy
+        run: |
+          .venv/bin/python -m vaipex_test_reliability.control_plane decide \
+            --input reports/healthy-evidence.json \
+            --output reports/healthy-decision.json \
+            --html reports/healthy-release.html \
+            --expect release
+      - name: Upload release evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-confidence-evidence
+          path: reports/
+          if-no-files-found: error
+          retention-days: 14
