@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vaipex-test-reliability-release-confidence-control-plane"
+version = "0.1.0"
+description = "A governed Playwright test reliability and release confidence system."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
+authors = [{ name = "Vaipex Labs", email = "vaipex.labs@gmail.com" }]
+dependencies = [
+    "fastapi==0.141.1",
+    "jinja2==3.1.6",
+    "playwright==1.62.0",
+    "uvicorn==0.52.3",
+]
+
+[project.optional-dependencies]
+test = [
+    "httpx2==2.10.0",
+    "pip-tools==7.6.1",
+    "pytest==9.1.1",
+    "pytest-html==4.2.0",
+    "pytest-playwright==0.9.0",
+    "pytest-rerunfailures==16.4",
+    "pytest-xdist==3.8.0",
+    "ruff==0.16.3",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+markers = [
+    "critical: customer-critical journey that independently gates release",
+    "reliability: journey included in repeat and flake classification",
+    "quarantined: journey governed by the quarantine register",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
