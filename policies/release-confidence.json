@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "max_active_quarantines": 1,
+  "max_failed_journeys": 0,
+  "max_flake_rate": 0.5,
+  "minimum_completion_rate": 1.0,
+  "critical_journeys_must_pass": true,
+  "allow_critical_quarantine": false
+}

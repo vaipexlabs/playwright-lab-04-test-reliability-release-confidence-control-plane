@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Release Confidence Checkout | Vaipex Labs</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <script src="{{ url_for('static', path='/app.js') }}" defer></script>
+  </head>
+  <body data-scenario="{{ scenario }}">
+    <a class="skip-link" href="#main-content">Skip to checkout</a>
+    <header class="site-header">
+      <a class="brand" href="/?scenario=stable" aria-label="Vaipex Labs reliability lab home">
+        <span class="brand-mark" aria-hidden="true">V</span>
+        <span><strong>Vaipex Labs</strong><small>Release Confidence</small></span>
+      </a>
+      <nav aria-label="Reliability scenarios">
+        <a href="/?scenario=stable" {% if scenario == "stable" %}aria-current="page"{% endif %}>Stable</a>
+        <a href="/?scenario=transient" {% if scenario == "transient" %}aria-current="page"{% endif %}>Transient</a>
+        <a href="/?scenario=critical-failure" {% if scenario == "critical-failure" %}aria-current="page"{% endif %}>Critical</a>
+      </nav>
+      <span class="environment"><span aria-hidden="true"></span>Deterministic lab</span>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Customer-critical journey</p>
+          <h1 id="page-title">Checkout reliability review</h1>
+          <p class="lede">One controlled experience for stable, flaky, and persistent-failure evidence.</p>
+        </div>
+        <span class="scenario-badge {{ scenario }}">{{ badge }}</span>
+      </section>
+
+      <section class="contract" aria-labelledby="contract-title">
+        <span class="contract-icon" aria-hidden="true">◎</span>
+        <div><h2 id="contract-title">Active scenario contract</h2><p>{{ description }}</p></div>
+        <strong>{{ expectation }}</strong>
+      </section>
+
+      <section class="layout">
+        <article class="checkout-card" aria-labelledby="order-title">
+          <header><div><p class="eyebrow">Order VXP-2048</p><h2 id="order-title">Platform Engineering Handbook</h2></div><span>$48.00</span></header>
+          <div class="order-line"><span class="book-mark" aria-hidden="true">PE</span><div><strong>Digital edition</strong><small>Immediate access after confirmation</small></div><span>$48.00</span></div>
+          <dl class="totals"><div><dt>Subtotal</dt><dd>$48.00</dd></div><div><dt>Delivery</dt><dd>$0.00</dd></div><div class="total"><dt>Total</dt><dd>$48.00</dd></div></dl>
+          <button id="complete-order" class="primary-button" type="button">Complete order</button>
+          <div id="checkout-result" class="result" role="status" aria-live="polite" hidden>
+            <span class="result-icon" aria-hidden="true"></span>
+            <div><strong data-result-title></strong><p data-result-detail></p></div>
+          </div>
+        </article>
+
+        <aside class="evidence-card" aria-labelledby="evidence-title">
+          <p class="eyebrow">Execution evidence</p><h2 id="evidence-title">Journey identity</h2>
+          <dl>
+            <div><dt>Journey</dt><dd>checkout.complete-order</dd></div>
+            <div><dt>Risk</dt><dd>Customer critical</dd></div>
+            <div><dt>Owner</dt><dd>Commerce Platform</dd></div>
+            <div><dt>Scenario</dt><dd>{{ scenario }}</dd></div>
+          </dl>
+          <div class="principle"><strong>Retries are evidence</strong><p>A recovered attempt remains visible as a reliability signal.</p></div>
+        </aside>
+      </section>
+    </main>
+
+    <footer><span>Vaipex Labs reference implementation</span><span>Reliability contract: vaipex-v1</span></footer>
+  </body>
+</html>

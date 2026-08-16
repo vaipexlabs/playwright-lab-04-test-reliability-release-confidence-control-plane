@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vaipex Release Confidence Report</title>
+  <style>
+    :root { --ink:#172033; --muted:#667085; --border:#e4e7ec; --canvas:#f5f7fb; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--ink); background:radial-gradient(circle at 85% 0%,rgba(104,66,232,.1),transparent 28rem),var(--canvas); }
+    header { height:76px; padding:0 4vw; display:flex; align-items:center; gap:12px; background:white; border-bottom:1px solid var(--border); }
+    .logo { width:42px; height:42px; display:grid; place-items:center; color:white; font-weight:900; background:linear-gradient(145deg,#2877ff,#6d42e8); border-radius:12px; }
+    header small, .subtitle, td small, .blockers ul { color:var(--muted); }
+    header small, .card span, td small { display:block; }
+    main { width:min(1160px,92vw); margin:auto; padding:48px 0; }
+    .eyebrow { margin:0 0 8px; color:#5130c7; font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { margin:0; font-size:46px; letter-spacing:-.04em; }
+    .summary { margin-top:28px; display:grid; grid-template-columns:1.35fr repeat(4,1fr); gap:14px; }
+    .card, .panel { background:white; border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 24px rgba(21,29,53,.06); }
+    .card { min-height:140px; padding:22px; }
+    .decision { color:white; background:linear-gradient(145deg,#087a55,#13a775); }
+    .decision.hold { background:linear-gradient(145deg,#b42318,#ef4444); }
+    .card span { font-size:12px; font-weight:750; opacity:.78; }
+    .card strong { display:block; margin-top:14px; font-size:34px; }
+    .panel { margin-top:16px; padding:24px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:16px; text-align:left; border-bottom:1px solid #f0f1f3; }
+    th { color:var(--muted); font-size:11px; text-transform:uppercase; }
+    td small { margin-top:4px; }
+    .pill { display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:#eef2ff; }
+    .pill.stable { color:#067647; background:#ecfdf3; }
+    .pill.flaky { color:#b54708; background:#fffaeb; }
+    .pill.failed { color:#b42318; background:#fff0ee; }
+    .pill.quarantined { color:#5130c7; background:#f1edff; }
+    .blockers ul { margin:12px 0 0; padding-left:20px; }
+    footer { padding:20px 4vw; display:flex; justify-content:space-between; color:var(--muted); background:white; border-top:1px solid var(--border); font-size:12px; }
+  </style>
+</head>
+<body>
+  <header><div class="logo">V</div><div><strong>Vaipex Labs</strong><small>Release Confidence Control Plane</small></div></header>
+  <main>
+    <p class="eyebrow">{{ report.profile }} execution profile</p>
+    <h1>Release confidence review</h1>
+    <p class="subtitle">Complete Playwright attempts evaluated against governed reliability policy.</p>
+    <section class="summary">
+      <article class="card decision {{ decision_class }}"><span>Delivery decision</span><strong>{{ report.decision }}</strong></article>
+      {% for label in ["stable", "flaky", "failed", "quarantined"] %}
+      <article class="card"><span>{{ label|capitalize }}</span><strong>{{ report.counts[label] }}</strong></article>
+      {% endfor %}
+    </section>
+    <section class="panel">
+      <p class="eyebrow">Journey evidence</p>
+      <table>
+        <thead><tr><th>Journey</th><th>Owner</th><th>Risk</th><th>Classification</th><th>Attempts</th></tr></thead>
+        <tbody>
+        {% for journey in report.journeys %}
+          <tr>
+            <td><strong>{{ journey.name }}</strong><small>{{ journey.id }}</small></td>
+            <td>{{ journey.owner }}</td>
+            <td>{{ "Critical" if journey.critical else "Standard" }}</td>
+            <td><span class="pill {{ journey.classification }}">{{ journey.classification }}</span></td>
+            <td>{{ journey.attempts|length }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    <section class="panel blockers"><p class="eyebrow">Decision rationale</p><ul>{% for blocker in blockers %}<li>{{ blocker }}</li>{% endfor %}</ul></section>
+  </main>
+  <footer><span>Vaipex Labs reference implementation</span><span>Reliability contract: vaipex-v1</span></footer>
+</body>
+</html>

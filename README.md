@@ -1,146 +1,230 @@
 # Vaipex Test Reliability & Release Confidence Control Plane
 
-An open reference implementation for converting Playwright execution evidence
-into an intentional, policy-driven software release decision.
+An open reference implementation that turns complete Playwright execution
+evidence into one explainable, policy-driven software release decision.
 
-Developed by **Vaipex Labs** for the developer, test automation, and platform
-engineering communities.
+Developed by **Vaipex Labs** for the developer, test automation, quality
+engineering, and platform engineering communities.
 
 ![Focus](https://img.shields.io/badge/Focus-Test%20Reliability-6D42E8)
 ![Playwright](https://img.shields.io/badge/Playwright-Python-2EAD33?logo=playwright&logoColor=white)
 ![Decision](https://img.shields.io/badge/Decision-Release%20%7C%20Hold-1677FF)
+![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
 
-[Project Intent](#project-intent) ·
-[What It Will Prove](#what-it-will-prove) ·
+[Two-Minute Demo](#two-minute-demo) ·
+[What It Delivers](#what-it-delivers) ·
 [Delivery Flow](#delivery-flow) ·
 [Architecture](#architecture) ·
-[Reliability Contract](#reliability-contract) ·
-[Delivery Roadmap](#delivery-roadmap) ·
-[Series Context](#series-context)
+[How It Works](#how-it-works) ·
+[Policy](#release-confidence-policy) ·
+[CI](#continuous-enforcement) ·
+[Series](#playwright-engineering-series)
 
-## Project Intent
+## Why This Exists
 
-A green test run does not always mean a release is safe. Retries can conceal
-intermittent failures, quarantines can become permanent, parallel execution can
-fragment evidence, and a simple pass percentage can hide failure in a
+A green test run does not always mean a release is safe. A retry can conceal an
+intermittent failure, a quarantine can become permanent, parallel jobs can
+fragment evidence, and an aggregate pass rate can hide failure in a
 customer-critical journey.
 
-This project demonstrates a test reliability control plane that separates
-execution mechanics from release policy. It will collect Playwright results,
-classify stable failures and flakes, govern temporary quarantine, correlate
-parallel evidence, and publish one explainable `RELEASE` or `HOLD` decision.
+This control plane separates browser execution from release governance. It
+preserves every attempt, classifies reliability, validates temporary
+exceptions, correlates parallel evidence, and applies a versioned confidence
+contract before returning `RELEASE` or `HOLD`.
 
-## What It Will Prove
+## Two-Minute Demo
 
-- First-attempt outcomes and retry outcomes are preserved separately.
-- A test that passes only after retry is classified as flaky, not simply green.
-- Repeated execution produces measurable pass-rate and flake-rate evidence.
-- Quarantines require an owner, reason, scope, and expiration date.
-- Expired, broad, or unowned quarantines fail policy validation.
-- Sharded jobs publish evidence that can be merged without losing test identity.
-- Customer-critical journeys can block release independently of aggregate rate.
-- Versioned reliability thresholds produce one explainable release decision.
-- Local execution and GitHub Actions use the same policy and reporting commands.
+### Prerequisites
+
+- macOS or Linux
+- Python 3.12
+- Internet access for the first toolchain installation
+
+Set up the pinned environment once:
+
+```bash
+./scripts/setup.sh
+```
+
+Run the complete demonstration:
+
+```bash
+./scripts/two-minute-demo.sh
+```
+
+The command performs five visible steps:
+
+1. Validates the pinned Python, Pytest, and Playwright toolchain.
+2. Tests classification, correlation, quarantine, and decision policy.
+3. Executes the healthy profile across two deterministic shards.
+4. Correlates one stable and one flaky journey and proves `RELEASE`.
+5. Injects a persistent critical failure and proves `HOLD` with blockers.
+
+Review the generated evidence:
+
+```bash
+open reports/healthy-release.html
+open reports/incident-hold.html
+```
+
+The same control-plane commands run locally and in GitHub Actions.
+
+## What It Delivers
+
+- Complete ordered attempt evidence instead of final-result-only reporting
+- Explicit `stable`, `flaky`, `failed`, and `quarantined` classifications
+- Deterministic stable, transient-recovery, and critical-failure scenarios
+- Lossless evidence correlation across independently executed shards
+- Owned, justified, issue-linked, time-bounded quarantine governance
+- Critical-journey enforcement independent of aggregate success rates
+- Versioned completion, flake, failure, and quarantine thresholds
+- Machine-readable JSON decisions and portable HTML review dashboards
+- A continuously enforced GitHub Actions release-confidence gate
+- Retained CI evidence for audit, diagnosis, and release review
+
+| Tool | Role |
+| --- | --- |
+| Python 3.12 | Control-plane and policy orchestration |
+| Playwright for Python | Browser journey execution and screenshots |
+| Pytest | Journey and policy verification |
+| FastAPI | Deterministic reference application |
+| JSON | Portable attempt, policy, quarantine, and decision contracts |
+| HTML | Human-readable release-confidence dashboard |
+| GitHub Actions | Parallel execution, correlation, and enforcement |
 
 ## Delivery Flow
 
 Test intent moves through controlled execution, reliability classification,
-governed exception handling, correlated evidence, and one release decision.
+governed exception handling, correlated evidence, and one transparent release
+decision. The decision feeds reliability improvement back to engineering teams.
 
 ![Vaipex test reliability and release confidence flow](docs/images/vaipex-test-reliability-flow.svg)
 
 ## Architecture
 
 Developers and GitHub Actions invoke the same Python control layer. Playwright
-executes reusable journeys, the reliability engine classifies attempts and
-flakes, the governance layer evaluates quarantine and release policy, and the
-evidence layer publishes one decision with its supporting context.
+executes reusable journeys, the reliability engines classify attempts and
+correlate shards, and the governance layer evaluates exceptions and release
+policy before publishing the decision and its evidence.
 
 ![Vaipex test reliability and release confidence architecture](docs/images/vaipex-test-reliability-architecture.svg)
 
-## Reliability Contract
+## How It Works
 
-| Signal | Control-plane interpretation |
+### 1. Execute deterministic journeys
+
+The included checkout application exposes three controlled scenarios:
+
+| Scenario | URL | Result |
+| --- | --- | --- |
+| Stable | `/?scenario=stable` | Passes on the first attempt |
+| Transient | `/?scenario=transient` | Fails once, then recovers |
+| Critical failure | `/?scenario=critical-failure` | Fails every allowed attempt |
+
+Start the application with `./scripts/start-app.sh`, then open
+[http://127.0.0.1:8000](http://127.0.0.1:8000). Use `Control-C` to stop it.
+
+![Deterministic Vaipex checkout reliability application](docs/images/vaipex-reference-application.png)
+
+Run the reusable browser journeys headlessly or watch Chromium execute them:
+
+```bash
+./scripts/test-e2e.sh
+./scripts/test-e2e.sh --headed
+```
+
+### 2. Preserve and classify attempts
+
+| Attempt history | Classification |
 | --- | --- |
-| Passed on first attempt | Stable pass |
-| Failed, then passed on retry | Flaky result requiring visibility |
-| Failed on every allowed attempt | Stable failure |
-| Quarantined and within policy | Visible temporary exception |
-| Missing owner or expired quarantine | Governance failure |
-| Critical journey failure | Release blocker |
-| Threshold breach | Release blocker with policy evidence |
+| First attempt passes | Stable |
+| First attempt fails; retry passes | Flaky |
+| Every allowed attempt fails | Failed |
+| Flaky or failed journey has an approved exception | Quarantined |
 
-The control plane will not treat retries as a mechanism for hiding instability.
-Every attempt remains evidence, and release policy consumes the classification
-rather than only the final Pytest exit code.
+Retries are evidence, not a way to turn instability green. Each attempt keeps
+its status, duration, response detail, and screenshot path.
 
-## Target Experience
+### 3. Correlate parallel evidence
 
-The finished repository will expose one short demonstration:
+`run-reliability-shard.sh` deterministically partitions the journey catalog.
+The merge command requires every expected shard, rejects duplicate journey
+identities, and produces one ordered evidence document. Missing or incompatible
+shards fail before policy evaluation.
 
-```bash
-./scripts/two-minute-demo.sh
-```
+### 4. Govern temporary exceptions
 
-The demo will run stable and intentionally unreliable journeys, correlate
-their attempts, apply quarantine and release policy, generate a reviewable
-report, and print the resulting `RELEASE` or `HOLD` decision.
+The quarantine register accepts only exact known journey IDs. Every exception
+must include an owner, reason, HTTPS issue URL, and expiration date. Broad,
+duplicate, incomplete, or expired entries fail validation. Critical journeys
+cannot be quarantined under the default policy.
 
-## Delivery Roadmap
+See [policies/README.md](policies/README.md) for the contract.
 
-- [x] Establish the repository, intent, licensing, roadmap, and Vaipex diagrams.
-- [x] Add the locked Python and Playwright reliability toolchain.
-- [ ] Deliver a deterministic reference application and reusable journeys.
-- [ ] Capture attempts and classify stable, flaky, and failed outcomes.
-- [ ] Add owned, justified, scoped, and expiring quarantine governance.
-- [ ] Add sharded execution and lossless evidence correlation.
-- [ ] Enforce critical-journey and reliability-threshold release policy.
-- [ ] Publish continuous GitHub Actions enforcement and retained evidence.
-- [ ] Deliver the two-minute demo and final community-facing documentation.
+### 5. Decide and explain
 
-Each milestone will remain independently reviewable and preserve a usable
-project state.
+The decision engine evaluates correlated evidence against the versioned policy
+and emits:
 
-## Toolchain
+- `reports/*-decision.json` for automation and downstream systems
+- `reports/*.html` for human review
+- process exit status for delivery enforcement
 
-| Tool | Role |
-| --- | --- |
-| Python 3.12 | Reliability analysis and policy orchestration |
-| Playwright for Python | Browser journey execution |
-| Pytest | Test identity, parametrization, markers, and assertions |
-| JSON evidence | Portable attempt, quarantine, and decision contracts |
-| HTML reporting | Human-readable release-confidence evidence |
-| GitHub Actions | Sharded execution and continuous enforcement |
+![Vaipex release confidence review dashboard](docs/images/vaipex-release-confidence-dashboard.png)
 
-Direct dependencies are pinned in `pyproject.toml`; the fully resolved
-transitive dependency graph is committed in `requirements.lock`. One command
-creates the Python 3.12 environment, installs the exact dependency set,
-installs the Playwright-managed Chromium renderer, and validates the complete
-contract:
+## Release Confidence Policy
 
-```bash
-./scripts/setup.sh
-```
+The default contract in
+[`policies/release-confidence.json`](policies/release-confidence.json) requires:
 
-Validate an existing environment without modifying it:
+- 100% journey completion
+- zero failed journeys
+- a flake rate no greater than 50% in this deliberately small demonstration
+- no more than one active quarantine
+- every critical journey to pass
+- no critical-journey quarantine
 
-```bash
-./scripts/validate-toolchain.sh
-```
+These demonstration thresholds are explicit and replaceable. A production team
+can tighten them and expand the journey catalog without changing the evidence
+or decision model.
 
-## Planned Repository Structure
+## Continuous Enforcement
+
+The `Release confidence gate` workflow runs on pull requests, pushes to `main`,
+and manual dispatch. It:
+
+1. validates the locked toolchain and all unit and browser tests;
+2. executes the healthy journey catalog across two matrix shards;
+3. uploads each shard's evidence independently;
+4. downloads and correlates the complete evidence set;
+5. enforces the release policy; and
+6. retains the JSON and HTML evidence for 14 days.
+
+A failed critical journey, incomplete shard set, invalid quarantine, or breached
+threshold prevents the gate from reporting release confidence.
+
+## Repository Map
 
 ```text
-.github/workflows/     Continuous execution and release-policy enforcement
-docs/images/           Vaipex flow and architecture illustrations
-policies/              Reliability thresholds and quarantine register
+.github/workflows/     Parallel CI execution and release-policy enforcement
+docs/images/           Vaipex flow, architecture, app, and dashboard visuals
+policies/              Versioned thresholds and quarantine register
 scripts/               Supported setup, execution, and demo commands
-src/                   Reference application and control-plane logic
-tests/                  Playwright journeys and policy tests
+src/                   Reference application and control-plane implementation
+tests/                  Browser journeys, policy tests, and contract tests
 ```
 
-## Series Context
+## Customize It
+
+- Replace the sample checkout journeys while preserving stable journey IDs.
+- Add ownership and risk metadata to the journey catalog.
+- Tune thresholds in `policies/release-confidence.json`.
+- Add narrow temporary exceptions to `policies/quarantines.json`.
+- Forward decision JSON to a deployment, change-management, or evidence system.
+- Replace the included app with any target reachable by Playwright.
+
+## Playwright Engineering Series
 
 This is Part 4 of the Vaipex Labs Playwright Engineering Series:
 
@@ -157,8 +241,8 @@ confidence.
 
 This project demonstrates test reliability governance. It does not replace
 production observability, incident management, exploratory testing, or product
-risk ownership. Its purpose is to provide a transparent engineering signal
-that makes automated release decisions safer and more explainable.
+risk ownership. It provides a transparent engineering signal for safer, more
+explainable automated delivery decisions.
 
 ## Contributing
 
