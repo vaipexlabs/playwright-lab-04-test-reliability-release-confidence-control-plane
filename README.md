@@ -90,7 +90,7 @@ report, and print the resulting `RELEASE` or `HOLD` decision.
 ## Delivery Roadmap
 
 - [x] Establish the repository, intent, licensing, roadmap, and Vaipex diagrams.
-- [ ] Add the locked Python and Playwright reliability toolchain.
+- [x] Add the locked Python and Playwright reliability toolchain.
 - [ ] Deliver a deterministic reference application and reusable journeys.
 - [ ] Capture attempts and classify stable, flaky, and failed outcomes.
 - [ ] Add owned, justified, scoped, and expiring quarantine governance.
@@ -102,7 +102,7 @@ report, and print the resulting `RELEASE` or `HOLD` decision.
 Each milestone will remain independently reviewable and preserve a usable
 project state.
 
-## Planned Toolchain
+## Toolchain
 
 | Tool | Role |
 | --- | --- |
@@ -112,6 +112,22 @@ project state.
 | JSON evidence | Portable attempt, quarantine, and decision contracts |
 | HTML reporting | Human-readable release-confidence evidence |
 | GitHub Actions | Sharded execution and continuous enforcement |
+
+Direct dependencies are pinned in `pyproject.toml`; the fully resolved
+transitive dependency graph is committed in `requirements.lock`. One command
+creates the Python 3.12 environment, installs the exact dependency set,
+installs the Playwright-managed Chromium renderer, and validates the complete
+contract:
+
+```bash
+./scripts/setup.sh
+```
+
+Validate an existing environment without modifying it:
+
+```bash
+./scripts/validate-toolchain.sh
+```
 
 ## Planned Repository Structure
 
